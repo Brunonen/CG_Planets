@@ -108,6 +108,7 @@ function SolidSphere(gl, latitudeBands, longitudeBands, radius) {
         gl.drawElements(gl.TRIANGLES, this.numberOfTriangles*3 ,gl.UNSIGNED_SHORT, 0);
 
         // disable the arrays
+        gl.disableVertexAttribArray(aTextureCoord);
         gl.disableVertexAttribArray(aVertexPositionId);
         gl.disableVertexAttribArray(aVertexNormalId);
     }
