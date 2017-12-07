@@ -227,8 +227,6 @@ function draw() {
     var uTextureWanted = gl.getUniformLocation(ctx.shaderProgram, "uTextureWanted");
     var uLightingWanted = gl.getUniformLocation(ctx.shaderProgram, "uLightingWanted");
 
-
-
     rotation += 0.0005;
 
     var rotationMatrix = mat4.create();
