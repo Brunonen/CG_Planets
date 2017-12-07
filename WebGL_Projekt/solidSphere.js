@@ -76,7 +76,7 @@ function SolidSphere(gl, latitudeBands, longitudeBands, radius) {
         return indices;
     }
 
-    function draw(gl, aVertexPositionId, aVertexColorId, aVertexNormalId, aTextureCoord,  color, textureToLoad) {
+    function draw(gl, aVertexPositionId, aVertexColorId, aVertexNormalId, aTextureCoord,  color, textureToLoad, secondTextureToLoad) {
         "use strict";
 
         // position
@@ -101,6 +101,10 @@ function SolidSphere(gl, latitudeBands, longitudeBands, radius) {
         gl. activeTexture (gl. TEXTURE0 );
         gl. bindTexture (gl. TEXTURE_2D , textureToLoad);
         gl. uniform1i (ctx.uSampler2DId , 0);
+
+        gl. activeTexture (gl. TEXTURE1 );
+        gl. bindTexture (gl. TEXTURE_2D , secondTextureToLoad);
+        gl. uniform1i (ctx.uSamplerSecondtexture , 1);
 
 
         // elements

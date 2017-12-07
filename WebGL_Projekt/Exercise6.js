@@ -25,7 +25,8 @@ var ctx = {
     uInverseTranslationMatrix: -1,
     uNormalMatrix: -1,
     aNormalBuffer: -1,
-    uLightPosition: -1
+    uLightPosition: -1,
+    uSamplerSecondtexture: -1
 };
 
 
@@ -63,6 +64,7 @@ function initGL() {
     setUpAttributesAndUniforms();
     //setUpBuffers();
     loadTextureEarth();
+    loadTextureEarthDark();
     loadTextureMoon();
     //gl.clearColor(0,0,0,1);
 
@@ -79,6 +81,7 @@ function setUpAttributesAndUniforms(){
     ctx.myColor = gl.getUniformLocation(ctx.shaderProgram, "myColor");
     ctx.aColor = gl.getAttribLocation(ctx.shaderProgram, "aColor");
     ctx.uSampler2DId = gl.getUniformLocation(ctx.shaderProgram, "uSampler");
+    ctx.uSamplerSecondtexture = gl.getUniformLocation(ctx.shaderProgram, "uSamplerSecondTexture");
     ctx.aVertexTextureCord = gl.getAttribLocation(ctx.shaderProgram, "aVertexTextureCoord");
 
     ctx.uRotationMatrix = gl.getUniformLocation(ctx.shaderProgram, "uRotationMatrix");
@@ -135,9 +138,13 @@ var earthTxt = {
     textureObj:{}
 };
 
+var earthDarkTxt = {
+    textureObj:{}
+};
+
 var backgrndTxt = {
     textureObj:{}
-}
+};
 
 
 function initTexture(image, textureObject){
@@ -147,7 +154,7 @@ function initTexture(image, textureObject){
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
     gl.generateMipmap(gl.TEXTURE_2D);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindTexture(gl.TEXTURE_2D, textureObject);
 }
 function loadTextureEarth() {
     var image = new Image ();
@@ -160,7 +167,21 @@ function loadTextureEarth() {
         // make sure there is a redraw after the loading of the texture
     };
     // setting the src will trigger onload
-    image.src = "1_earth_8k.jpg";
+    image.src = "1_earth_8k-min.jpg";
+}
+
+function loadTextureEarthDark() {
+    var image = new Image ();
+    // create a texture object
+    earthDarkTxt.textureObj = gl. createTexture();
+
+    image.onload = function () {
+        initTexture (image , earthDarkTxt.textureObj );
+
+        // make sure there is a redraw after the loading of the texture
+    };
+    // setting the src will trigger onload
+    image.src = "Earth_At_Night-min.jpg";
 }
 
 function initBkgnd() {
@@ -168,10 +189,12 @@ function initBkgnd() {
 
     var backTex = new Image();
     backTex.onload = function() {
-        initTexture(backTex. backgrndTxt.textureObj);
+        initTexture(backTex, backgrndTxt.textureObj);
     }
     backTex.src = "stars.jpg";
 }
+
+
 
 function loadTextureMoon() {
     var image = new Image ();
@@ -184,7 +207,7 @@ function loadTextureMoon() {
         // make sure there is a redraw after the loading of the texture
     };
     // setting the src will trigger onload
-    image.src = "moon.jpg";
+    image.src = "moon-min.jpg";
 }
 function setUpBuffers(){
 
@@ -226,6 +249,7 @@ function draw() {
 
     var uTextureWanted = gl.getUniformLocation(ctx.shaderProgram, "uTextureWanted");
     var uLightingWanted = gl.getUniformLocation(ctx.shaderProgram, "uLightingWanted");
+    var uSecondTextureWanted = gl.getUniformLocation(ctx.shaderProgram, "uSecondTextureWanted");
 
     rotation += 0.0005;
 
@@ -245,6 +269,8 @@ function draw() {
 
     gl.uniform1i(uTextureWanted, 1);
     gl.uniform1i(uLightingWanted, 1);
+    //gl.uniformli(uSecondTextureWanted, 1);
+    gl.uniform1i(uSecondTextureWanted, 1);
 
     //solidCube.draw (gl , ctx.aVertexPositonId , ctx.aColor, ctx.aVertexTextureCord, ctx.aNormalBuffer);
     //gl.uniform1i(uTextureWanted, 0);
@@ -263,12 +289,13 @@ function draw() {
     gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
 
 
-    solidSphereEarth.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], earthTxt.textureObj);
+    solidSphereEarth.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], earthTxt.textureObj, earthDarkTxt.textureObj);
 
     var matrix = setLookAt();
     mat4.ortho(projectionMatrix,
         -2, 2, -2, 2, 0, 50);
     gl.uniform1i(uLightingWanted, 0);
+    gl.uniform1i(uSecondTextureWanted, 0);
 
     gl.uniformMatrix4fv(ctx.uProjectionMatrix, false, projectionMatrix);
 
@@ -284,7 +311,7 @@ function draw() {
     normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
     gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
 
-    solidSphereMoon.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], moonTxt.textureObj);
+    solidSphereMoon.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], moonTxt.textureObj, moonTxt.textureObj);
     //solidCube.draw (gl , ctx.aVertexPositonId , ctx.aColor, ctx.aVertexTextureCord, ctx.aNormalBuffer);
     window.requestAnimationFrame(draw);
 }/**

@@ -3,9 +3,11 @@ uniform vec3 myColor;
 varying vec3 vColor;
 varying vec2 vTextureCoord ;
 uniform sampler2D uSampler ;
+uniform sampler2D uSamplerSecondTexture;
 
 uniform int uTextureWanted;
 uniform int uLightingWanted;
+uniform int uSecondTextureWanted;
 
 uniform vec3 uLightPosition;
 uniform vec3 uLightColor ;
@@ -28,6 +30,8 @@ void main() {
     if(uTextureWanted == 1){
         baseColor = texture2D ( uSampler , vec2(vTextureCoord.s, vTextureCoord.t)).rgb  ;
     }
+
+
 
     if(uLightingWanted == 1)
     {
@@ -57,8 +61,19 @@ void main() {
             specularColor = specularMaterialColor * specularFactor;
         }
 
-        vec3 color = ambientColor + diffuseColor + specularColor ;
-        gl_FragColor = vec4 (color , 1.0) ;
+        if(cosPhi > 0.0){
+            vec3 color = ambientColor + diffuseColor + specularColor ;
+            gl_FragColor = vec4 (color , 1.0) ;
+        }else{
+            if(uSecondTextureWanted == 1){
+                vec3 baseColorSecond = texture2D ( uSamplerSecondTexture , vec2(vTextureCoord.s, vTextureCoord.t)).rgb  ;
+                vec3 colorNoLight = baseColorSecond;
+                gl_FragColor = vec4(colorNoLight, 1.0);
+            }else{
+                vec3 colorNormal = ambientColor + diffuseColor + specularColor ;
+                gl_FragColor = vec4 (colorNormal , 1.0) ;
+            }
+        }
     }else{
         gl_FragColor = vec4 ( baseColor , 1.0) ;
     }
