@@ -15,8 +15,8 @@ uniform vec3 uLightColor ;
 varying vec3 vNormalEye ;
 varying vec3 vVertexPositionEye3 ;
 
-const float ambientFactor = 0.2;
-const float shininess = 20.0;
+const float ambientFactor = 0.08;
+const float shininess = 100.0;
 const vec3 specularMaterialColor = vec3 (0.4 , 0.4 , 0.4) ;
 
 //uniform sampler3D uSampler;
@@ -66,9 +66,13 @@ void main() {
             gl_FragColor = vec4 (color , 1.0) ;
         }else{
             if(uSecondTextureWanted == 1){
+
                 vec3 baseColorSecond = texture2D ( uSamplerSecondTexture , vec2(vTextureCoord.s, vTextureCoord.t)).rgb  ;
-                vec3 colorNoLight = baseColorSecond;
+                vec3 ambientColorSecond = 0.6 * baseColorSecond.rgb;
+                vec3 colorNoLight = ambientColorSecond + diffuseColor + specularColor ;;
+
                 gl_FragColor = vec4(colorNoLight, 1.0);
+
             }else{
                 vec3 colorNormal = ambientColor + diffuseColor + specularColor ;
                 gl_FragColor = vec4 (colorNormal , 1.0) ;

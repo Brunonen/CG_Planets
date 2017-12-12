@@ -47,7 +47,9 @@ function startup() {
 
     solidSphereMars = new SolidSphere(gl, 40, 40,2.5);
 
-    solidSphereMoon = new SolidSphere(gl, 40, 40,2.5);
+    solidSphereMoon = new SolidSphere(gl, 40, 40,0.5);
+
+    solidSphereSun = new SolidSphere(gl, 40, 40,4);
     draw();
 
 }
@@ -72,6 +74,7 @@ function initGL() {
     loadTextureEarthDark();
     loadTextureMoon();
     loadTextureMars();
+    loadTextureSun();
     //gl.clearColor(0,0,0,1);
 
 
@@ -116,6 +119,7 @@ var wiredCube;
 var solidSphereEarth;
 var solidSphereMoon;
 var solidSphereMars;
+var solidSphereSun;
 var lightY = 0;
 var lightX = 0;
 var lightZ = 0;
@@ -123,6 +127,9 @@ var countUp = true;
 var interval = 0.005;
 var lightRot = 0;
 var cameraPos = 0;
+var marsOrbit = 0.017453292519943;
+var earthOrbit = 0.017453292519943;
+var moonOrbit = 0.017453292519943;
 
 
 
@@ -157,6 +164,10 @@ var earthDarkTxt = {
 var backgrndTxt = {
     textureObj:{}
 };
+
+var sunTxt = {
+    textureObj:{}
+}
 
 
 function initTexture(image, textureObject){
@@ -194,6 +205,20 @@ function loadTextureEarthDark() {
     };
     // setting the src will trigger onload
     image.src = "Earth_At_Night-min.jpg";
+}
+
+function loadTextureSun() {
+    var image = new Image ();
+    // create a texture object
+    sunTxt.textureObj = gl. createTexture();
+
+    image.onload = function () {
+        initTexture (image , sunTxt.textureObj );
+
+        // make sure there is a redraw after the loading of the texture
+    };
+    // setting the src will trigger onload
+    image.src = "sun.jpg";
 }
 
 
@@ -263,7 +288,6 @@ function draw() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     initBkgnd();
 
-    console.log(cameraPos.value);
     var matrix = setLookAt(cameraPos.value);
 
 
@@ -278,66 +302,13 @@ function draw() {
 
 
 
-    gl.uniform3f(ctx.uLightPosition, 200000*Math.cos(lightRot),0,200000*Math.sin(lightRot));
+    //gl.uniform3f(ctx.uLightPosition, 200000*Math.cos(lightRot),0,200000*Math.sin(lightRot));
+    gl.uniform3f(ctx.uLightPosition, 0,0,0);
     lightRot += interval;
 
     var uTextureWanted = gl.getUniformLocation(ctx.shaderProgram, "uTextureWanted");
     var uLightingWanted = gl.getUniformLocation(ctx.shaderProgram, "uLightingWanted");
     var uSecondTextureWanted = gl.getUniformLocation(ctx.shaderProgram, "uSecondTextureWanted");
-
-    rotation += 0.0005;
-
-    var rotationMatrix = mat4.create();
-    var translationMatrix = mat4.create();
-    var inverseTranslationMatrix = mat4.create();
-
-    mat4.translate(matrix, matrix, [0, 0, 50]);
-    mat4.rotate(matrix, matrix,rotation, [0.0,1.0,0.0]);
-    // mat4.translate(matrix, matrix, [-0.5, 0.0, -0.5]);
-
-    gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
-
-    var normalMatrix = mat3.create();
-    normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
-    gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
-
-    gl.uniform1i(uTextureWanted, 1);
-    gl.uniform1i(uLightingWanted, 1);
-    //gl.uniformli(uSecondTextureWanted, 1);
-    gl.uniform1i(uSecondTextureWanted, 1);
-
-    //solidCube.draw (gl , ctx.aVertexPositonId , ctx.aColor, ctx.aVertexTextureCord, ctx.aNormalBuffer);
-    //gl.uniform1i(uTextureWanted, 0);
-
-    var matrix = setLookAt(cameraPos.value);
-
-
-    //mat4.translate(matrix, matrix, [-0.0,0.0, 1.5]);
-    // mat4.rotate(matrix, matrix,rotation, [0.0,1.0,0.0]);
-    // mat4.translate(matrix, matrix, [-0.5, 0.0, -0.5]);
-    // mat4.scale(matrix, matrix, [0.75, 0.75, 0.75]);
-    // gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
-
-    var normalMatrix = mat3.create();
-    normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
-    gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
-
-
-    solidSphereEarth.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], earthTxt.textureObj, earthDarkTxt.textureObj);
-
-
-    gl.uniform1i(uSecondTextureWanted, 0);
-
-    var projectionMatrix = mat4.create();
-    // mat4.perspective(projectionMatrix, 2,3,1,50);
-    // gl.uniformMatrix4fv(ctx.uProjectionMatrix, false, projectionMatrix);
-
-    mat4.translate(matrix, matrix, [0, 0, 150]);
-    // mat4.rotate(matrix, matrix, 0, [0.0,0,0.0]);
-    // mat4.scale(matrix, matrix, [0.3, 0.3, 0.3]);
-    gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
-
-    solidSphereMars.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], marsTxt.textureObj, marsTxt.textureObj);
 
     var matrix = setLookAt(cameraPos.value);
     // mat4.ortho(projectionMatrix,
@@ -353,9 +324,86 @@ function draw() {
     // mat4.translate(matrix, matrix, [18, -13.5, 18]);
     // mat4.rotate(matrix, matrix,Math.PI, [1.0,1.0,0.0]);
 
-   // mat4.translate(matrix, matrix, [-0.5, 0.0, -0.5]);
     gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
-    gl.uniform3f(ctx.uLightPosition, -50, 0, -50);
+    //gl.uniform3f(ctx.uLightPosition, -50, 0, -50);
+
+    var normalMatrix = mat3.create();
+    normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
+    gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
+
+    solidSphereSun.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], sunTxt.textureObj, sunTxt.textureObj);
+
+    var matrix = setLookAt(cameraPos.value);
+
+    rotation += 0.0005;
+    earthOrbit += 0.005;
+    mat4.rotate(matrix, matrix,earthOrbit, [0.0,1.0,0.0]);
+    mat4.translate(matrix, matrix, [0, 0, 50]);
+    mat4.rotate(matrix, matrix,rotation, [0.0,1.0,0.0]);
+    // mat4.translate(matrix, matrix, [-0.5, 0.0, -0.5]);
+
+    gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
+
+    var normalMatrix = mat3.create();
+    normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
+    gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
+
+    gl.uniform1i(uTextureWanted, 1);
+    gl.uniform1i(uLightingWanted, 1);
+    //gl.uniformli(uSecondTextureWanted, 1);
+    gl.uniform1i(uSecondTextureWanted, 1);
+
+
+
+
+    var normalMatrix = mat3.create();
+    normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
+    gl.uniformMatrix3fv(ctx.uNormalMatrix, false, normalMatrix);
+
+
+    solidSphereEarth.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], earthTxt.textureObj, earthDarkTxt.textureObj);
+
+
+    var matrix = setLookAt(cameraPos.value);
+
+    gl.uniform1i(uSecondTextureWanted, 0);
+
+    var projectionMatrix = mat4.create();
+    // mat4.perspective(projectionMatrix, 2,3,1,50);
+    // gl.uniformMatrix4fv(ctx.uProjectionMatrix, false, projectionMatrix)
+    marsOrbit += 0.005
+    mat4.rotate(matrix, matrix, marsOrbit, [0.25,1,0.0]);
+    mat4.translate(matrix, matrix, [0, 0, 150]);
+
+    // mat4.scale(matrix, matrix, [0.3, 0.3, 0.3]);
+    gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
+
+    solidSphereMars.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], marsTxt.textureObj, marsTxt.textureObj);
+
+    var matrix = setLookAt(cameraPos.value);
+    // mat4.ortho(projectionMatrix,
+    //     -2, 2, -2, 2, 0, 50);
+
+    // mat4.perspective(projectionMatrix, 2,3,1,50);
+    gl.uniform1i(uLightingWanted, 1);
+    gl.uniform1i(uSecondTextureWanted, 0);
+
+    // gl.uniformMatrix4fv(ctx.uProjectionMatrix, false, projectionMatrix);
+
+
+    // mat4.translate(matrix, matrix, [18, -13.5, 18]);
+    // mat4.rotate(matrix, matrix,Math.PI, [1.0,1.0,0.0]);
+    moonOrbit += 0.01;
+   // mat4.translate(matrix, matrix, [0, 0, -50]);
+    mat4.rotate(matrix, matrix,earthOrbit, [0.0,1.0,0.0]);
+    mat4.translate(matrix, matrix, [0, 0, 50]);
+    //mat4.translate(matrix, matrix, [0, 0.0, -10]);
+    mat4.rotate(matrix, matrix, moonOrbit, [1.0,1,0.0]);
+    mat4.translate(matrix, matrix, [0, 0.0, 10]);
+
+
+    gl.uniformMatrix4fv(ctx.uModelViewMatrix, false, matrix);
+    //gl.uniform3f(ctx.uLightPosition, -50, 0, -50);
 
     var normalMatrix = mat3.create();
     normalMatrix = mat3.normalFromMat4(normalMatrix, matrix);
@@ -363,6 +411,8 @@ function draw() {
 
     solidSphereMoon.draw(gl, ctx.aVertexPositonId , ctx.aColor, ctx.aNormalBuffer, ctx.aVertexTextureCord, [1.0, 0.0, 0.0], moonTxt.textureObj, moonTxt.textureObj);
     //solidCube.draw (gl , ctx.aVertexPositonId , ctx.aColor, ctx.aVertexTextureCord, ctx.aNormalBuffer);
+
+
     window.requestAnimationFrame(draw);
 }/**
  * Created by bruno on 24/10/2017.
