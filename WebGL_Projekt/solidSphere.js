@@ -106,7 +106,6 @@ function SolidSphere(gl, latitudeBands, longitudeBands, radius) {
         gl. bindTexture (gl. TEXTURE_2D , secondTextureToLoad);
         gl. uniform1i (ctx.uSamplerSecondtexture , 1);
 
-
         // elements
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphere.bufferIndices);
         gl.drawElements(gl.TRIANGLES, this.numberOfTriangles*3 ,gl.UNSIGNED_SHORT, 0);
